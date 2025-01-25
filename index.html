@@ -155,6 +155,7 @@
         function endGame() {
             isGameOver = true;
             gameOverText.style.display = 'block';
+            saveScoreToWix();
         }
 
         // העלאת ניקוד
@@ -162,6 +163,21 @@
             if (isGameOver) return;
             score++;
             updateScoreboard();
+        }
+
+        // שמירת הניקוד בויקס
+        function saveScoreToWix() {
+            const userId = 'userId'; // אם יש דרך להחליף במידע מהויקס
+            fetch('https://digitalilocali.com/_functions/saveScore', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, score }),
+            })
+                .then((response) => response.json())
+                .then((data) => console.log('Score saved:', data))
+                .catch((error) => console.error('Error saving score:', error));
         }
 
         // יצירת מפלצות בכל 2 שניות
