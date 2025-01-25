@@ -158,6 +158,37 @@
         function endGame() {
             isGameOver = true;
             gameOverText.style.display = 'block';
+            saveScoreToWix(score); // שמירת הניקוד ב-Wix
+        }
+
+        // שליחת הניקוד ל-Wix
+        async function saveScoreToWix(score) {
+            try {
+                const userId = await getUserIdFromWix(); // קבלת מזהה המשתמש
+                const response = await fetch('https://digitalilocali.com/_functions/saveScore', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ userId, score }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save score');
+                }
+
+                console.log('Score saved successfully!');
+            } catch (error) {
+                console.error('Error saving score:', error);
+            }
+        }
+
+        // קבלת מזהה המשתמש מ-Wix
+        async function getUserIdFromWix() {
+            return new Promise((resolve) => {
+                // Wix ידאג להזין מזהה ייחודי
+                resolve('12345'); // להחליף עם מזהה דינמי אמיתי אם יש צורך
+            });
         }
 
         // יצירת מפלצות בכל 2 שניות
