@@ -116,8 +116,8 @@
             if (isGameOver) return;
             const monster = document.createElement('div');
             monster.classList.add('monster');
-            const monsterY = Math.random() * (canvasHeight - 40);
-            monster.style.left = `${canvasWidth}px`;
+            const monsterY = Math.random() * (canvasHeight - 40); // מיקום אקראי בציר Y
+            monster.style.left = `${canvasWidth}px`; // התחלה בצד ימין של המסך
             monster.style.top = `${monsterY}px`;
             gameCanvas.appendChild(monster);
 
@@ -135,7 +135,7 @@
                     return;
                 }
 
-                monsterX -= 5;
+                monsterX -= 5; // המפלצת נעה שמאלה
                 monster.style.left = `${monsterX}px`;
 
                 // אם מפלצת מגיעה לקצה
@@ -158,22 +158,6 @@
         function endGame() {
             isGameOver = true;
             gameOverText.style.display = 'block';
-            saveScoreToWix();
-        }
-
-        // שמירת הניקוד בויקס
-        function saveScoreToWix() {
-            const userId = 'userId'; // אם יש מזהה משתמש, החלף כאן
-            fetch('https://digitalilocali.com/_functions/saveScore', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ userId, score }),
-            })
-                .then((response) => response.json())
-                .then((data) => console.log('Score saved:', data))
-                .catch((error) => console.error('Error saving score:', error));
         }
 
         // יצירת מפלצות בכל 2 שניות
