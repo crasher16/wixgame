@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>משחק תנועת דמות</title>
+    <title>משחק תנועת דמות - שליטה עם עכבר</title>
     <style>
         body {
             margin: 0;
@@ -70,38 +70,22 @@
         const canvasWidth = gameCanvas.offsetWidth;
         const canvasHeight = gameCanvas.offsetHeight;
 
-        let playerX = 50;
-        let playerY = 50;
-        const playerSpeed = 10;
         let lives = 3;
         let score = 0;
         let isGameOver = false;
 
-        // הקשבה ללחיצות מקלדת
-        document.addEventListener('keydown', (event) => {
+        // מעקב אחר מיקום העכבר
+        gameCanvas.addEventListener('mousemove', (event) => {
             if (isGameOver) return;
-            switch (event.key) {
-                case "ArrowUp":
-                    if (playerY - playerSpeed >= 0) playerY -= playerSpeed;
-                    break;
-                case "ArrowDown":
-                    if (playerY + playerSpeed + player.offsetHeight <= canvasHeight) playerY += playerSpeed;
-                    break;
-                case "ArrowLeft":
-                    if (playerX - playerSpeed >= 0) playerX -= playerSpeed;
-                    break;
-                case "ArrowRight":
-                    if (playerX + playerSpeed + player.offsetWidth <= canvasWidth) playerX += playerSpeed;
-                    break;
-            }
-            updatePlayerPosition();
-        });
+            const rect = gameCanvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
 
-        // עדכון מיקום הדמות
-        function updatePlayerPosition() {
-            player.style.left = `${playerX}px`;
-            player.style.top = `${playerY}px`;
-        }
+            if (mouseX >= 0 && mouseX <= canvasWidth && mouseY >= 0 && mouseY <= canvasHeight) {
+                player.style.left = `${mouseX - player.offsetWidth / 2}px`;
+                player.style.top = `${mouseY - player.offsetHeight / 2}px`;
+            }
+        });
 
         // יצירת מפלצות
         function spawnMonster() {
@@ -142,6 +126,9 @@
                 if (monsterX < -40) {
                     clearInterval(interval);
                     monster.remove();
+                    lives--; // מפלצת שהגיעה לקצה מפחיתה חיים
+                    updateScoreboard();
+                    if (lives <= 0) endGame();
                 }
             }, 50);
         }
@@ -164,36 +151,13 @@
             scoreboard.textContent = `Lives: ${lives} | Score: ${score}`;
         }
 
-        // שליחת ניקוד ל-Wix
-        function saveScoreToWix(userId, score) {
-            fetch("https://digitalilocali.com/_functions/saveScore", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ userId, score }),
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                console.log(data.message); // הודעת הצלחה
-            })
-            .catch((error) => {
-                console.error("Error saving score:", error); // הודעת שגיאה
-            });
-        }
-
         // סיום משחק
         function endGame() {
             isGameOver = true;
             gameOverText.style.display = 'block';
-
-            const userId = prompt("Enter your user ID:"); // בקש מזהה משתמש
-            if (userId) {
-                saveScoreToWix(userId, score); // שליחת ניקוד ל-Wix
-            }
         }
 
-        // הגדלת ניקוד
+        // העלאת ניקוד
         function increaseScore() {
             if (isGameOver) return;
             score++;
