@@ -1,132 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>משחק תנועת דמות</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background-color: #f0f0f0;
-    }
-
-    #gameCanvas {
-      position: relative;
-      width: 800px;
-      height: 600px;
-      margin: 50px auto;
-      background-color: #333;
-      border: 2px solid #000;
-    }
-
-    .player {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-      background-color: #4CAF50;
-      border-radius: 50%;
-    }
-
-    .monster {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      background-color: #FF0000;
-      border-radius: 50%;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק תנועת דמות</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+        #gameCanvas {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            margin: 50px auto;
+            background-color: #333;
+            border: 2px solid #000;
+        }
+        .player {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+        }
+        .monster {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #FF0000;
+            border-radius: 50%;
+        }
+        #scoreboard {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+        }
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 36px;
+            font-family: Arial, sans-serif;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
 </head>
-
 <body>
-  <div id="gameCanvas">
-    <div class="player" id="player"></div>
-  </div>
+    <div id="gameCanvas">
+        <div id="scoreboard">Lives: 3 | Score: 0</div>
+        <div class="player" id="player"></div>
+        <div id="gameOver">Game Over! Refresh to play again.</div>
+    </div>
 
-  <script>
-    const player = document.getElementById('player');
-    const gameCanvas = document.getElementById('gameCanvas');
-    const canvasWidth = gameCanvas.offsetWidth;
-    const canvasHeight = gameCanvas.offsetHeight;
+    <script>
+        const player = document.getElementById('player');
+        const gameCanvas = document.getElementById('gameCanvas');
+        const scoreboard = document.getElementById('scoreboard');
+        const gameOverText = document.getElementById('gameOver');
+        const canvasWidth = gameCanvas.offsetWidth;
+        const canvasHeight = gameCanvas.offsetHeight;
 
-    // מיקום התחלתי של השחקן
-    let playerX = 50;
-    let playerY = 50;
-    const playerSpeed = 10;
+        // מיקום התחלתי של השחקן
+        let playerX = 50;
+        let playerY = 50;
+        const playerSpeed = 10;
+        let lives = 3;
+        let score = 0;
+        let isGameOver = false;
 
-    // הקשבה ללחיצות מקלדת
-    document.addEventListener('keydown', (event) => {
-      switch (event.key) {
-        case "ArrowUp":
-          if (playerY - playerSpeed >= 0) playerY -= playerSpeed;
-          break;
-        case "ArrowDown":
-          if (playerY + playerSpeed + player.offsetHeight <= canvasHeight) playerY += playerSpeed;
-          break;
-        case "ArrowLeft":
-          if (playerX - playerSpeed >= 0) playerX -= playerSpeed;
-          break;
-        case "ArrowRight":
-          if (playerX + playerSpeed + player.offsetWidth <= canvasWidth) playerX += playerSpeed;
-          break;
-      }
-      updatePlayerPosition();
-    });
+        // הקשבה ללחיצות מקלדת
+        document.addEventListener('keydown', (event) => {
+            if (isGameOver) return;
+            switch (event.key) {
+                case "ArrowUp":
+                    if (playerY - playerSpeed >= 0) playerY -= playerSpeed;
+                    break;
+                case "ArrowDown":
+                    if (playerY + playerSpeed + player.offsetHeight <= canvasHeight) playerY += playerSpeed;
+                    break;
+                case "ArrowLeft":
+                    if (playerX - playerSpeed >= 0) playerX -= playerSpeed;
+                    break;
+                case "ArrowRight":
+                    if (playerX + playerSpeed + player.offsetWidth <= canvasWidth) playerX += playerSpeed;
+                    break;
+            }
+            updatePlayerPosition();
+        });
 
-    // עדכון מיקום הדמות
-    function updatePlayerPosition() {
-      player.style.left = `${playerX}px`;
-      player.style.top = `${playerY}px`;
-    }
-
-    // יצירת מפלצות
-    setInterval(() => {
-      const monster = document.createElement('div');
-      monster.classList.add('monster');
-      const monsterY = Math.random() * (canvasHeight - 40);
-      monster.style.left = `${canvasWidth}px`;
-      monster.style.top = `${monsterY}px`;
-      gameCanvas.appendChild(monster);
-
-      moveMonster(monster);
-    }, 2000);
-
-    // תנועת מפלצות
-    function moveMonster(monster) {
-      let monsterX = canvasWidth;
-      const interval = setInterval(() => {
-        monsterX -= 5;
-        monster.style.left = `${monsterX}px`;
-
-        // בדיקת התנגשות עם השחקן
-        if (checkCollision(player, monster)) {
-          clearInterval(interval);
-          monster.remove();
-          alert("המפלצת פגעה בך! 😱");
+        // עדכון מיקום הדמות
+        function updatePlayerPosition() {
+            player.style.left = `${playerX}px`;
+            player.style.top = `${playerY}px`;
         }
 
-        // הסרת מפלצות שיצאו מהמסך
-        if (monsterX < -40) {
-          clearInterval(interval);
-          monster.remove();
+        // יצירת מפלצות
+        function spawnMonster() {
+            if (isGameOver) return;
+            const monster = document.createElement('div');
+            monster.classList.add('monster');
+            const monsterY = Math.random() * (canvasHeight - 40);
+            monster.style.left = `${canvasWidth}px`;
+            monster.style.top = `${monsterY}px`;
+            gameCanvas.appendChild(monster);
+
+            moveMonster(monster);
         }
-      }, 50);
-    }
 
-    // בדיקת התנגשות
-    function checkCollision(player, monster) {
-      const playerRect = player.getBoundingClientRect();
-      const monsterRect = monster.getBoundingClientRect();
+        // תנועת מפלצות
+        function moveMonster(monster) {
+            let monsterX = canvasWidth;
+            const interval = setInterval(() => {
+                if (isGameOver) {
+                    clearInterval(interval);
+                    monster.remove();
+                    return;
+                }
 
-      return (
-        playerRect.left < monsterRect.right &&
-        playerRect.right > monsterRect.left &&
-        playerRect.top < monsterRect.bottom &&
-        playerRect.bottom > monsterRect.top
-      );
-    }
-  </script>
+                monsterX -= 5;
+                monster.style.left = `${monsterX}px`;
+
+                // בדיקת התנגשות עם השחקן
+                if (checkCollision(player, monster)) {
+                    lives--;
+                    updateScoreboard();
+                    monster.remove();
+                    clearInterval(interval);
+                    if (lives <= 0) endGame();
+                }
+
+                // הסרת מפלצות שיצאו מהמסך
+                if (monsterX < -40) {
+                    clearInterval(interval);
+                    monster.remove();
+                }
+            }, 50);
+        }
+
+        // בדיקת התנגשות
+        function checkCollision(player, monster) {
+            const playerRect = player.getBoundingClientRect();
+            const monsterRect = monster.getBoundingClientRect();
+
+            return (
+                playerRect.left < monsterRect.right &&
+                playerRect.right > monsterRect.left &&
+                playerRect.top < monsterRect.bottom &&
+                playerRect.bottom > monsterRect.top
+            );
+        }
+
+        // עדכון לוח ניקוד
+        function updateScoreboard() {
+            scoreboard.textContent = `Lives: ${lives} | Score: ${score}`;
+        }
+
+        // סיום משחק
+        function endGame() {
+            isGameOver = true;
+            gameOverText.style.display = 'block';
+        }
+
+        // הגדלת ניקוד
+        function increaseScore() {
+            if (isGameOver) return;
+            score++;
+            updateScoreboard();
+        }
+
+        // יצירת מפלצות בכל 2 שניות
+        setInterval(spawnMonster, 2000);
+
+        // העלאת ניקוד בכל 5 שניות
+        setInterval(increaseScore, 5000);
+    </script>
 </body>
-
 </html>
