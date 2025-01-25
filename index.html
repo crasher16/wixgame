@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>משחק תנועת דמות - שליטה עם עכבר</title>
+    <title>משחק תנועת כוונת</title>
     <style>
         body {
             margin: 0;
@@ -20,8 +20,8 @@
         }
         .player {
             position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 20px;
+            height: 20px;
             background-color: #4CAF50;
             border-radius: 50%;
         }
@@ -73,6 +73,7 @@
         let lives = 3;
         let score = 0;
         let isGameOver = false;
+        let monsters = [];
 
         // מעקב אחר מיקום העכבר
         gameCanvas.addEventListener('mousemove', (event) => {
@@ -87,6 +88,29 @@
             }
         });
 
+        // ירייה על מפלצת
+        gameCanvas.addEventListener('click', () => {
+            if (isGameOver) return;
+
+            const playerRect = player.getBoundingClientRect();
+            monsters = monsters.filter((monster) => {
+                const monsterRect = monster.getBoundingClientRect();
+
+                if (
+                    playerRect.left < monsterRect.right &&
+                    playerRect.right > monsterRect.left &&
+                    playerRect.top < monsterRect.bottom &&
+                    playerRect.bottom > monsterRect.top
+                ) {
+                    monster.remove(); // הסר את המפלצת
+                    score++; // עדכן ניקוד
+                    updateScoreboard();
+                    return false; // הסר את המפלצת מהרשימה
+                }
+                return true; // שמור את המפלצת ברשימה
+            });
+        });
+
         // יצירת מפלצות
         function spawnMonster() {
             if (isGameOver) return;
@@ -97,6 +121,7 @@
             monster.style.top = `${monsterY}px`;
             gameCanvas.appendChild(monster);
 
+            monsters.push(monster); // הוסף לרשימת המפלצות
             moveMonster(monster);
         }
 
@@ -113,37 +138,15 @@
                 monsterX -= 5;
                 monster.style.left = `${monsterX}px`;
 
-                // בדיקת התנגשות עם השחקן
-                if (checkCollision(player, monster)) {
-                    lives--;
-                    updateScoreboard();
-                    monster.remove();
-                    clearInterval(interval);
-                    if (lives <= 0) endGame();
-                }
-
-                // הסרת מפלצות שיצאו מהמסך
+                // אם מפלצת מגיעה לקצה
                 if (monsterX < -40) {
                     clearInterval(interval);
                     monster.remove();
-                    lives--; // מפלצת שהגיעה לקצה מפחיתה חיים
+                    lives--; // הפחת חיים
                     updateScoreboard();
                     if (lives <= 0) endGame();
                 }
             }, 50);
-        }
-
-        // בדיקת התנגשות
-        function checkCollision(player, monster) {
-            const playerRect = player.getBoundingClientRect();
-            const monsterRect = monster.getBoundingClientRect();
-
-            return (
-                playerRect.left < monsterRect.right &&
-                playerRect.right > monsterRect.left &&
-                playerRect.top < monsterRect.bottom &&
-                playerRect.bottom > monsterRect.top
-            );
         }
 
         // עדכון לוח ניקוד
@@ -158,16 +161,9 @@
             saveScoreToWix();
         }
 
-        // העלאת ניקוד
-        function increaseScore() {
-            if (isGameOver) return;
-            score++;
-            updateScoreboard();
-        }
-
         // שמירת הניקוד בויקס
         function saveScoreToWix() {
-            const userId = 'userId'; // אם יש דרך להחליף במידע מהויקס
+            const userId = 'userId'; // אם יש מזהה משתמש, החלף כאן
             fetch('https://digitalilocali.com/_functions/saveScore', {
                 method: 'POST',
                 headers: {
@@ -182,9 +178,6 @@
 
         // יצירת מפלצות בכל 2 שניות
         setInterval(spawnMonster, 2000);
-
-        // העלאת ניקוד בכל 5 שניות
-        setInterval(increaseScore, 5000);
     </script>
 </body>
 </html>
