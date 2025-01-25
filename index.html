@@ -70,7 +70,6 @@
         const canvasWidth = gameCanvas.offsetWidth;
         const canvasHeight = gameCanvas.offsetHeight;
 
-        // מיקום התחלתי של השחקן
         let playerX = 50;
         let playerY = 50;
         const playerSpeed = 10;
@@ -165,10 +164,33 @@
             scoreboard.textContent = `Lives: ${lives} | Score: ${score}`;
         }
 
+        // שליחת ניקוד ל-Wix
+        function saveScoreToWix(userId, score) {
+            fetch("https://digitalilocali.com/_functions/saveScore", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ userId, score }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data.message); // הודעת הצלחה
+            })
+            .catch((error) => {
+                console.error("Error saving score:", error); // הודעת שגיאה
+            });
+        }
+
         // סיום משחק
         function endGame() {
             isGameOver = true;
             gameOverText.style.display = 'block';
+
+            const userId = prompt("Enter your user ID:"); // בקש מזהה משתמש
+            if (userId) {
+                saveScoreToWix(userId, score); // שליחת ניקוד ל-Wix
+            }
         }
 
         // הגדלת ניקוד
